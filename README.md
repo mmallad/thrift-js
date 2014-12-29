@@ -7,6 +7,7 @@ Its primary purpose is to support the Ably browser client library and therefore
 it excludes support for:
 
 - RPC;
+- Supports thrift > 9.x;
 - any transport other than TTransport;
 - any protocol other than TBinaryProtocol.
 

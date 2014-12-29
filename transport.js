@@ -41,37 +41,41 @@ TTransport.prototype = {
   },
 
   readByte: function() {
-    return this.buf.getInt8(this.pos++);
+    return {value:this.buf.getInt8(this.pos++)};
   },
 
   readI16: function() {
     var i16 = this.buf.getInt16(this.pos);
     this.pos += 2;
-    return i16;
+    return {value:i16};
   },
 
   readI32: function() {
     var i32 = this.buf.getInt32(this.pos);
     this.pos += 4;
-    return i32;
+    return {value:i32};
   },
-
+  readI64: function() {
+    var i32 = this.buf.getInt64(this.pos);
+    this.pos += 8;
+    return {value:i32.valueOf()};
+  },
   readDouble: function() {
     var d = this.buf.getFloat64(this.pos);
     this.pos += 8;
-    return d;
+    return {value:d};
   },
 
   readString: function(len) {
     var str = this.buf.getUtf8String(this.pos, len);
     this.pos += len;
-    return str;
+    return {value:str};
   },
 
   readAll: function() {
     return this.buf;
   },
-  
+
   writeByte: function(v) {
     this.buf.setInt8(this.pos++, v);
   },

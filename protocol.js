@@ -50,15 +50,15 @@ var VERSION_MASK = -65536, // 0xffff0000
     TYPE_MASK = 0x000000ff;
 
 TBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid) {
-    if (this.strictWrite) {
-      this.writeI32(VERSION_1 | type);
-      this.writeString(name);
-      this.writeI32(seqid);
-    } else {
-      this.writeString(name);
-      this.writeByte(type);
-      this.writeI32(seqid);
-    }
+  if (this.strictWrite) {
+    this.writeI32(VERSION_1 | type);
+    this.writeString(name);
+    this.writeI32(seqid);
+  } else {
+    this.writeString(name);
+    this.writeByte(type);
+    this.writeI32(seqid);
+  }
 };
 
 TBinaryProtocol.prototype.writeMessageEnd = function() {
@@ -147,14 +147,15 @@ TBinaryProtocol.prototype.readMessageBegin = function() {
   var sz = this.readI32();
   var type, name, seqid;
 
-  if (sz < 0) {
+  if (sz.value < 0) {
     var version = sz & VERSION_MASK;
     if (version != VERSION_1) {
       console.log("BAD: " + version);
       throw TProtocolException(BAD_VERSION, "Bad version in readMessageBegin: " + sz);
     }
-    type = sz & TYPE_MASK;
+    type = sz.value & TYPE_MASK;
     name = this.readString();
+    name = name.value;
     seqid = this.readI32();
   } else {
     if (this.strictRead) {
@@ -164,7 +165,7 @@ TBinaryProtocol.prototype.readMessageBegin = function() {
     type = this.readByte();
     seqid = this.readI32();
   }
-  return {fname: name, mtype: type, rseqid: seqid};
+  return {fname: name, mtype: type.value, rseqid: seqid.value};
 };
 
 TBinaryProtocol.prototype.readMessageEnd = function() {
@@ -179,11 +180,11 @@ TBinaryProtocol.prototype.readStructEnd = function() {
 
 TBinaryProtocol.prototype.readFieldBegin = function() {
   var type = this.readByte();
-  if (type == Type.STOP) {
-    return {fname: null, ftype: type, fid: 0};
+  if (type.value == Type.STOP) {
+    return {fname: null, ftype: type.value, fid: 0};
   }
   var id = this.readI16();
-  return {fname: null, ftype: type, fid: id};
+  return {fname: null, ftype: type.value, fid: id.value};
 };
 
 TBinaryProtocol.prototype.readFieldEnd = function() {
@@ -193,7 +194,7 @@ TBinaryProtocol.prototype.readMapBegin = function() {
   var ktype = this.readByte();
   var vtype = this.readByte();
   var size = this.readI32();
-  return {ktype: ktype, vtype: vtype, size: size};
+  return {ktype: ktype.value, vtype: vtype.value, size: size.value};
 };
 
 TBinaryProtocol.prototype.readMapEnd = function() {
@@ -202,7 +203,7 @@ TBinaryProtocol.prototype.readMapEnd = function() {
 TBinaryProtocol.prototype.readListBegin = function() {
   var etype = this.readByte();
   var size = this.readI32();
-  return {etype: etype, size: size};
+  return {etype: etype.value, size: size.value};
 };
 
 TBinaryProtocol.prototype.readListEnd = function() {
@@ -211,7 +212,7 @@ TBinaryProtocol.prototype.readListEnd = function() {
 TBinaryProtocol.prototype.readSetBegin = function() {
   var etype = this.readByte();
   var size = this.readI32();
-  return {etype: etype, size: size};
+  return {etype: etype.value, size: size.value};
 };
 
 TBinaryProtocol.prototype.readSetEnd = function() {
@@ -219,10 +220,10 @@ TBinaryProtocol.prototype.readSetEnd = function() {
 
 TBinaryProtocol.prototype.readBool = function() {
   var i8 = this.readByte();
-  if (i8 == 0) {
-    return false;
+  if (i8.value == 0 || i8.value === undefined) {
+    return {value:false};
   }
-  return true;
+  return {value:true};
 };
 
 TBinaryProtocol.prototype.readByte = function() {
@@ -247,12 +248,12 @@ TBinaryProtocol.prototype.readDouble = function() {
 
 TBinaryProtocol.prototype.readBinary = function() {
   var len = this.readI32();
-  return this.trans.read(len);
+  return this.trans.read(len.value);
 };
 
 TBinaryProtocol.prototype.readString = function() {
   var len = this.readI32();
-  return this.trans.readString(len);
+  return this.trans.readString(len.value);
 };
 
 TBinaryProtocol.prototype.getTransport = function() {
